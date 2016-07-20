@@ -92,6 +92,7 @@ let argv = minimist(process.argv.slice(2), {
 	v: false,
     },
     boolean: ['v'],
+    string: ['d']
 })
 
 let conf = {
