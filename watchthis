@@ -1,0 +1,120 @@
+#!/usr/bin/env node
+
+let fs = require('fs')
+let path = require('path')
+let crypto = require('crypto')
+let spawn = require('child_process').spawn
+
+let _ = require('lodash')
+let chokidar = require('chokidar')
+let minimist = require('minimist')
+
+let meta = require('./package.json')
+
+let log = console.error.bind(console, `${meta.name}:`)
+
+let vlog = () => {}
+
+class NEId {
+    constructor() {
+	this.prefix = crypto.randomBytes(4).toString('hex')
+	this._counter = 0
+    }
+
+    get() {
+	return `${this.prefix}-${this._counter++}`
+    }
+}
+
+class NotifyEvent {
+    constructor(neid, event, file) {
+	this.id = neid.get()
+	this.time = Date.now()
+	this.event = event
+	this.file = file
+    }
+
+    toString() {
+	return [this.id, this.time, this.event, this.file].join(' ')
+    }
+}
+
+let tidings = function(conf, state, ne, force) {
+    if (state.locked) {
+	vlog(`${ne.toString()}: LOCK`)
+	state.solicitor = ne
+	return
+    }
+
+    vlog(`${ne.toString()}: RUN "${conf.cmd.name}"` +
+	 (force ? ' one more time' : ''))
+
+    state.solicitor = null
+    state.locked = true
+    let child = spawn(conf.cmd.name, conf.cmd.args,
+		      { stdio: ['inherit', 'inherit', 'inherit'] })
+
+    child.on('exit', (code) => {
+	state.locked = false
+	if (code !== 0)
+	    log(`${ne.id}: ${conf.cmd.name} exited w/ ${code}`)
+	if (state.solicitor) tidings(conf, state, state.solicitor, true)
+    })
+
+    child.on('error', (err) => {
+	state.locked = false
+	log(`${ne.id}: ${conf.cmd.name}: ${err}`)
+	if (state.solicitor) tidings(conf, state, state.solicitor, true)
+    })
+}
+
+
+// Main
+let argv = minimist(process.argv.slice(2), {
+    default: {
+	d: ['.'],
+	debounce: 1000,
+	i: [],
+	v: false,
+    },
+    boolean: ['v'],
+})
+
+let conf = {
+    ignore: ['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
+	     'node_modules', 'npm-debug.log', '.git', '.ph'],
+    opt: argv,
+    cmd: {
+	name: argv._[0],
+	args: argv._.slice(1)
+    },
+}
+
+if (!conf.cmd.name) {
+    conf.cmd.name = 'fortune'
+    conf.cmd.args = ['-n', '80', '-s']
+}
+if (conf.opt.v) vlog = log
+conf.ignore = _.uniq(conf.ignore.concat(argv.i))
+
+let state = {
+    locked: false,
+    solicitor: null,
+}
+
+let debounce_tidings = _.debounce(function(o, s, c) {
+    tidings(o, s, c)
+}, conf.opt.debounce)
+
+let watch_dir = function(state, conf) {
+    let neid = new NEId()
+    let watcher = chokidar.watch(conf.opt.d, {ignored: conf.ignore})
+
+    watcher.on('all', (event, file) => {
+	let cur = new NotifyEvent(neid, event, file)
+	debounce_tidings(conf, state, cur)
+    })
+}
+
+vlog(conf)
+watch_dir(state, conf)

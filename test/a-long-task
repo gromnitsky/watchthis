@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo A-LONG-TASK: $@
+sleep 10
+
+code=$1
+[ ! "$1" ] && code=0
+exit $1
