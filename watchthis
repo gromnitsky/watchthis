@@ -86,7 +86,7 @@ let watch = function(conf) {
 // Main
 let argv = minimist(process.argv.slice(2), {
     default: {
-	d: ['.'],
+	d: '.',
 	debounce: 1000,
 	e: [],
 	v: false,
@@ -106,6 +106,7 @@ let conf = {
     },
 }
 
+if (!Array.isArray(conf.opt.d)) conf.opt.d = [conf.opt.d]
 if (!conf.cmd.name) {
     conf.cmd.name = 'fortune'
     conf.cmd.args = ['-n', '80', '-s']
@@ -113,4 +114,14 @@ if (!conf.cmd.name) {
 if (conf.opt.v) vlog = log
 
 vlog(conf)
+try {
+    // actually, it should be chokidar's job
+    conf.opt.d.forEach( dir => {
+	if (!fs.statSync(dir).isDirectory())
+	    throw new Error(`'${dir}' isn't a directory`)
+    })
+} catch (err) {
+    console.error(err.toString())
+    process.exit(1)
+}
 watch(conf)
