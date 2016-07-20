@@ -68,6 +68,25 @@ let tidings = function(conf, state, ne, force) {
     })
 }
 
+let watch = function(conf) {
+    let state = {
+	locked: false,
+	solicitor: null,
+    }
+
+    let debounce_tidings = _.debounce(function(o, s, c) {
+	tidings(o, s, c)
+    }, conf.opt.debounce)
+
+    let neid = new NEId()
+    let watcher = chokidar.watch(conf.opt.d, {ignored: conf.exclude})
+
+    watcher.on('all', (event, file) => {
+	let cur = new NotifyEvent(neid, event, file)
+	debounce_tidings(conf, state, cur)
+    })
+}
+
 
 // Main
 let argv = minimist(process.argv.slice(2), {
@@ -81,8 +100,9 @@ let argv = minimist(process.argv.slice(2), {
 })
 
 let conf = {
-    exclude: ['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
-	      'node_modules', 'npm-debug.log', '.git', '.ph'],
+    exclude: _.uniq(['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
+		     'node_modules', 'npm-debug.log', '.git', '.ph']
+		    .concat(argv.e)),
     opt: argv,
     cmd: {
 	name: argv._[0],
@@ -95,26 +115,6 @@ if (!conf.cmd.name) {
     conf.cmd.args = ['-n', '80', '-s']
 }
 if (conf.opt.v) vlog = log
-conf.exclude = _.uniq(conf.exclude.concat(argv.e))
-
-let state = {
-    locked: false,
-    solicitor: null,
-}
-
-let debounce_tidings = _.debounce(function(o, s, c) {
-    tidings(o, s, c)
-}, conf.opt.debounce)
-
-let watch_dir = function(state, conf) {
-    let neid = new NEId()
-    let watcher = chokidar.watch(conf.opt.d, {ignored: conf.exclude})
-
-    watcher.on('all', (event, file) => {
-	let cur = new NotifyEvent(neid, event, file)
-	debounce_tidings(conf, state, cur)
-    })
-}
 
 vlog(conf)
-watch_dir(state, conf)
+watch(conf)
