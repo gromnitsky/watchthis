@@ -3,8 +3,8 @@
 'use strict';
 
 let fs = require('fs')
-let path = require('path')
 let spawn = require('child_process').spawn
+let os = require('os')
 
 let _ = require('lodash')
 let chokidar = require('chokidar')
@@ -69,6 +69,7 @@ let watch = function(conf) {
     let state = {
 	locked: false,
 	solicitor: null,
+	last: null
     }
 
     let debounce_tidings = _.debounce(function(o, s, c) {
@@ -81,6 +82,18 @@ let watch = function(conf) {
     watcher.on('all', (event, file) => {
 	let cur = new NotifyEvent(neid, event, file)
 	debounce_tidings(conf.cmd, state, cur)
+	state.last = cur
+    })
+
+    watcher.on('error', err => {
+	console.error(err.toString())
+	if (err.code === 'ENOSPC' && os.platform() === 'linux') {
+	    console.error(`
+This usually means you've reached the max number of the inotify watches.
+See /proc/sys/fs/inotify/max_user_watches for the current value.
+We've defaulted on ${state.last.id+1}.`)
+	}
+	process.exit(1)
     })
 }
 
