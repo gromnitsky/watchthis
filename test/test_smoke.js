@@ -24,14 +24,20 @@ suite('cli', function(done) {
 	    cp.execSync(`touch a-long-running-task && sleep 0.1 && touch a-long-running-task`)
 	}, 600)
 
-	setTimeout( () => {
-	    child.kill('SIGKILL')
+	child.on('exit', () => {
 //	    console.log(stderr)
 //	    console.log(stdout)
 	    let r = stdout.trim().split("\n")
 	    assert.equal(2+2, r.length)
 	    assert(r.every( val => val === "omglol"))
+
 	    done()
+	})
+
+	setTimeout( () => {
+	    child.stdout.destroy()
+	    child.stderr.destroy()
+	    child.kill('SIGKILL')
 	}, 1000)
     })
 
@@ -46,13 +52,19 @@ suite('cli', function(done) {
 	    cp.execSync(`touch a-long-running-task && sleep 0.1 && touch a-long-running-task`)
 	}, 600)
 
-	setTimeout( () => {
-	    child.kill('SIGKILL')
+	child.on('exit', () => {
 //	    console.log(stderr)
 //	    console.log(stdout)
 	    let r = stdout.trim().split("\n")
 	    assert.equal(2+1, r.length)
+
 	    done()
+	})
+
+	setTimeout( () => {
+	    child.stdout.destroy()
+	    child.stderr.destroy()
+	    child.kill('SIGKILL')
 	}, 1000)
     })
 
