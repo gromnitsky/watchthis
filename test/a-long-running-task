@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo A-LONG-TASK: $@
+echo A-LONG-RUNNING-TASK: $@
 sleep 10
 
 code=$1
