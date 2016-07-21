@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 let fs = require('fs')
 let path = require('path')
 let spawn = require('child_process').spawn
@@ -53,13 +55,13 @@ let tidings = function(cmd, state, ne, force = false) {
     child.on('exit', (code) => {
 	state.locked = false
 	if (code !== 0) log(`${ne.id}: ${cmd.name} exited w/ ${code}`)
-	if (state.solicitor) tidings(conf, state, state.solicitor, true)
+	if (state.solicitor) tidings(cmd, state, state.solicitor, true)
     })
 
     child.on('error', (err) => {
 	state.locked = false
 	log(`${ne.id}: ${cmd.name}: ${err}`)
-	if (state.solicitor) tidings(conf, state, state.solicitor, true)
+	if (state.solicitor) tidings(cmd, state, state.solicitor, true)
     })
 }
 
@@ -74,7 +76,7 @@ let watch = function(conf) {
     }, conf.opt.debounce)
 
     let neid = new NEId()
-    let watcher = chokidar.watch(conf.opt.d, {ignored: conf.exclude})
+    let watcher = chokidar.watch(conf.opt.a, {ignored: conf.exclude})
 
     watcher.on('all', (event, file) => {
 	let cur = new NotifyEvent(neid, event, file)
@@ -86,13 +88,13 @@ let watch = function(conf) {
 // Main
 let argv = minimist(process.argv.slice(2), {
     default: {
-	d: '.',
+	a: '.',
 	debounce: 1000,
 	e: [],
 	v: false,
     },
     boolean: ['v'],
-    string: ['d']
+    string: ['a']
 })
 
 let conf = {
@@ -106,7 +108,7 @@ let conf = {
     },
 }
 
-if (!Array.isArray(conf.opt.d)) conf.opt.d = [conf.opt.d]
+conf.opt.a = [].concat(conf.opt.a)
 if (!conf.cmd.name) {
     conf.cmd.name = 'fortune'
     conf.cmd.args = ['-n', '80', '-s']
@@ -116,10 +118,7 @@ if (conf.opt.v) vlog = log
 vlog(conf)
 try {
     // actually, it should be chokidar's job
-    conf.opt.d.forEach( dir => {
-	if (!fs.statSync(dir).isDirectory())
-	    throw new Error(`'${dir}' isn't a directory`)
-    })
+    conf.opt.a.forEach( dir => fs.statSync(dir) )
 } catch (err) {
     console.error(err.toString())
     process.exit(1)
