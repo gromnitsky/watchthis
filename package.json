@@ -11,8 +11,19 @@
 	"mocha": "~2.5.3"
     },
     "keywords": [
-	"watch"
+	"watch",
+	"file system",
+	"change"
     ],
-    "author": "Alexander Gromnitsky",
-    "license": "MIT"
+    "author": "Alexander Gromnitsky <alexander.gromnitsky@gmail.com>",
+    "license": "MIT",
+    "homepage": "https://github.com/gromnitsky/watchthis",
+    "repository": {
+	"type": "git",
+	"url": "git://github.com/gromnitsky/watchthis.git"
+    },
+
+    "bin": {
+	"watchthis": "./watchthis"
+    }
 }
