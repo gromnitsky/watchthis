@@ -74,10 +74,10 @@ let watch = function(conf) {
 
     let debounce_tidings = _.debounce(function(o, s, c) {
 	tidings(o, s, c)
-    }, conf.opt.debounce)
+    }, conf.user.debounce)
 
     let neid = new NEId()
-    let watcher = chokidar.watch(conf.opt.a, {ignored: conf.exclude})
+    let watcher = chokidar.watch(conf.user.a, {ignored: conf.user.e})
 
     watcher.on('all', (event, file) => {
 	let cur = new NotifyEvent(neid, event, file)
@@ -99,39 +99,42 @@ We've defaulted on ${state.last.id+1}.`)
 
 
 // Main
-let argv = minimist(process.argv.slice(2), {
-    default: {
+
+let conf = {
+    user: {
 	a: '.',
-	debounce: 1000,
 	e: [],
 	v: false,
+	debounce: 1000,
     },
+    cmd: {
+	name: 'fortune',
+	args: ['-n', '80', '-s']
+    },
+    exclude_def: ['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
+		  'node_modules', 'npm-debug.log', '.git', '.ph'],
+}
+
+let argv = minimist(process.argv.slice(2), {
+    default: conf.user,
     boolean: ['v'],
     string: ['a']
 })
 
-let conf = {
-    exclude: _.uniq(['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
-		     'node_modules', 'npm-debug.log', '.git', '.ph']
-		    .concat(argv.e)),
-    opt: argv,
-    cmd: {
-	name: argv._[0],
-	args: argv._.slice(1)
-    },
+conf.user = argv
+conf.user.a = [].concat(argv.a)
+conf.user.e = _.uniq(conf.exclude_def.concat(argv.e))
+if (conf.user.v) vlog = log
+
+if (argv._[0]) {
+    conf.cmd.name = argv._[0]
+    conf.cmd.args = argv._.slice(1)
 }
 
-conf.opt.a = [].concat(conf.opt.a)
-if (!conf.cmd.name) {
-    conf.cmd.name = 'fortune'
-    conf.cmd.args = ['-n', '80', '-s']
-}
-if (conf.opt.v) vlog = log
-
-vlog(conf)
+vlog(conf.user)
 try {
     // actually, it should be chokidar's job
-    conf.opt.a.forEach( dir => fs.statSync(dir) )
+    conf.user.a.forEach( dir => fs.statSync(dir) )
 } catch (err) {
     console.error(err.toString())
     process.exit(1)
