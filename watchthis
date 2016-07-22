@@ -111,8 +111,8 @@ let conf = {
 	name: 'fortune',
 	args: ['-n', '80', '-s']
     },
-    exclude_def: ['.*~', '*~', '.#*', '*.lock', '*.lock-*', '*.pid',
-		  'node_modules', 'npm-debug.log', '.git', '.ph'],
+    exclude_def: ['.*~', '*~', '.#*', '.*.swp', '.lock-*',
+		  'node_modules', 'npm-debug.log', '.git', '.hg', '.ph'],
 }
 
 let argv = minimist(process.argv.slice(2), {
