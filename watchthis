@@ -45,12 +45,11 @@ let tidings = function(cmd, state, ne, force = false) {
 	return
     }
 
-    vlog(`${ne}: RUN "${cmd.name}"` + (force ? ' again' : ''))
+    vlog(`${ne}: RUN ${force ? 'AGAIN ' : ''}${cmd.name}`)
 
     state.solicitor = null
     state.locked = true
-    let child = spawn(cmd.name, cmd.args,
-		      { stdio: ['inherit', 'inherit', 'inherit'] })
+    let child = spawn(cmd.name, cmd.args, { stdio: [0, 1, 2] })
 
     child.on('exit', (code) => {
 	state.locked = false
@@ -86,12 +85,11 @@ let watch = function(conf) {
     })
 
     watcher.on('error', err => {
-	console.error(err.toString())
+	log(err.toString())
 	if (err.code === 'ENOSPC' && os.platform() === 'linux') {
-	    console.error(`
-This usually means you've reached the max number of the inotify watches.
-See /proc/sys/fs/inotify/max_user_watches for the current value.
-We've defaulted on ${state.last.id+1}.`)
+	    log(`ENOSPC usually means you've reached the max number of the
+inotify watches. See /proc/sys/fs/inotify/max_user_watches for the current
+value. We've defaulted on ${state.last.id+1}.`)
 	}
 	process.exit(1)
     })
@@ -136,7 +134,7 @@ try {
     // actually, it should be chokidar's job
     conf.user.a.forEach( dir => fs.statSync(dir) )
 } catch (err) {
-    console.error(err.toString())
+    log(err.toString())
     process.exit(1)
 }
 watch(conf)
