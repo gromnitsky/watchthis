@@ -26,7 +26,7 @@ Watch the current dir & print "hello, dude" on each change:
 
 	$ watchthis echo hello, dude
 
-Watch the whole `/tmp` dir & just a file "foo" in the current dir
+Watch the whole `/tmp` dir + just a file `foo` in the current dir:
 
 	$ watchthis echo hello -a /tmp -a foo
 
