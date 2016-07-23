@@ -1,6 +1,6 @@
 {
     "name": "watchthis",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Run a command on file system changes",
     "dependencies": {
 	"chokidar": "~1.6.0",
