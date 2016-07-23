@@ -93,6 +93,26 @@ value. We've defaulted on ${state.last.id+1}.`)
 	}
 	process.exit(1)
     })
+
+    server(conf, state, watcher)
+}
+
+let server = function(conf, state, watcher) {
+    let http = require('http')
+    let srv = http.createServer( (req, res) => {
+	let obj = watcher.getWatched()
+	switch (req.url) {
+	case '/state':
+	    obj = state
+	    break
+	case '/conf':
+	    obj = conf
+	    break
+	}
+	res.end(JSON.stringify(obj))
+    })
+
+    if (conf.user.S !== '') srv.listen(conf.user.S)
 }
 
 
@@ -104,6 +124,7 @@ let conf = {
 	e: [],
 	v: false,
 	debounce: 1000,
+	S: '',
     },
     cmd: {
 	name: 'fortune',
@@ -129,7 +150,6 @@ if (argv._[0]) {
     conf.cmd.args = argv._.slice(1)
 }
 
-vlog(conf.user)
 try {
     // actually, it should be chokidar's job
     conf.user.a.forEach( dir => fs.statSync(dir) )

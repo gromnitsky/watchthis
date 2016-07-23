@@ -8,13 +8,13 @@ file system changes.
 
 	$ npm install watchthis
 
-* watches directories recursively
+* Watches directories recursively.
 * [anymatch](https://github.com/es128/anymatch) style exclude patterns
-* debounces events
-* ignores all new events while a user-provided command is running
+* Debounces events.
+* Ignores all new events while a user-provided command is running
   (if there were changes during the run, it reruns the command 1 time
-  once more)
-
+  once more).
+* Uses [chokidar](https://github.com/paulmillr/chokidar) under the hood.
 
 ## Requirements
 
@@ -38,6 +38,38 @@ Be verbose:
 
 	$ watchthis -v echo hello --debounce 400
 
+View the list of watchers in realtime:
+
+(terminal #1)
+
+	$ cd ~/Desktop
+	$ mkdir 1
+	$ watchthis echo alrigth -a 1 -S 8888
+
+(terminal #2)
+
+~~~
+$ curl -s http://127.0.0.1:8888 | json
+{
+  "/home/alex/Desktop": [
+	"1"
+  ],
+  "/home/alex/Desktop/1": []
+}
+~~~
+
+~~~
+$ touch ~/Desktop/1/omglol
+$ curl -s http://127.0.0.1:8888 | json
+{
+  "/home/alex/Desktop": [
+	"1"
+  ],
+  "/home/alex/Desktop/1": [
+	"omglol"
+  ]
+}
+~~~
 
 ## Bugs
 
