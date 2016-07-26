@@ -131,7 +131,8 @@ let conf = {
 	args: ['-n', '80', '-s']
     },
     exclude_def: ['.*~', '*~', '.#*', '.*.swp', '.lock-*',
-		  'node_modules', 'npm-debug.log', '.git', '.hg', '.ph'],
+		  'node_modules', 'npm-debug.log', '.git', '.hg', '.ph']
+	.map( (val) => '**/' + val.replace(/\./g, "\\.")),
 }
 
 let argv = minimist(process.argv.slice(2), {
