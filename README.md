@@ -11,9 +11,9 @@ file system changes.
 * Watches directories recursively.
 * [anymatch](https://github.com/es128/anymatch) style exclude patterns
 * Debounces events.
-* Ignores all new events while a user-provided command is running
-  (if there were changes during the run, it reruns the command 1 time
-  once more).
+* Ignores all new events while a user-provided command is running (if
+  there were changes during the run, it (by default, but it's
+  configurable) reruns the command 1 time once more).
 * Uses [chokidar](https://github.com/paulmillr/chokidar) under the hood.
 
 ## Requirements
@@ -34,14 +34,19 @@ Ignore `foo` & all `*.less` files:
 
 	$ watchthis echo hello -e foo -e \*.less
 
-Be verbose:
+Be verbose & change the number of milliseconds for a debounce delay:
 
 	$ watchthis -v echo hello --debounce 400
 
 Separate watchthis options from the options of an external command
 (otherwise they may clash, like with `-e` in the example below):
 
-	./watchthis -e \*.less -- make -e
+	$ watchthis -e \*.less -- make -e
+
+Don't rerun the external command if, during its run, some files were
+modified:
+
+	$ watchthis --norerun -a ../foo/src -- make -f ../foo/Makefile
 
 View the list of watchers in realtime:
 

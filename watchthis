@@ -38,29 +38,29 @@ class NotifyEvent {
     }
 }
 
-let tidings = function(cmd, state, ne, force = false) {
+let tidings = function(conf, state, ne, force = false) {
     if (state.locked) {
 	vlog(`${ne}: LOCKED`)
-	state.solicitor = ne
+	if (!conf.user.norerun) state.solicitor = ne
 	return
     }
 
-    vlog(`${ne}: RUN${force ? ' AGAIN' : ''}: ${cmd.name} ${cmd.args.join(' ')}`)
+    vlog(`${ne}: RUN${force ? ' AGAIN' : ''}: ${conf.cmd.name} ${conf.cmd.args.join(' ')}`)
 
     state.solicitor = null
     state.locked = true
-    let child = spawn(cmd.name, cmd.args, { stdio: [0, 1, 2] })
+    let child = spawn(conf.cmd.name, conf.cmd.args, { stdio: [0, 1, 2] })
 
     child.on('exit', (code) => {
 	state.locked = false
-	if (code !== 0) log(`${ne.id}: ${cmd.name} exited w/ ${code}`)
-	if (state.solicitor) tidings(cmd, state, state.solicitor, true)
+	if (code !== 0) log(`${ne.id}: ${conf.cmd.name} exited w/ ${code}`)
+	if (state.solicitor) tidings(conf, state, state.solicitor, true)
     })
 
     child.on('error', (err) => {
 	state.locked = false
-	log(`${ne.id}: ${cmd.name}: ${err}`)
-	if (state.solicitor) tidings(cmd, state, state.solicitor, true)
+	log(`${ne.id}: ${conf.cmd.name}: ${err}`)
+	if (state.solicitor) tidings(conf, state, state.solicitor, true)
     })
 }
 
@@ -80,7 +80,7 @@ let watch = function(conf) {
 
     watcher.on('all', (event, file) => {
 	let cur = new NotifyEvent(neid, event, file)
-	debounce_tidings(conf.cmd, state, cur)
+	debounce_tidings(conf, state, cur)
 	state.last = cur
     })
 
@@ -125,6 +125,7 @@ let conf = {
 	v: false,
 	debounce: 1000,
 	S: '',
+	norerun: false,
     },
     cmd: {
 	name: 'fortune',
@@ -137,7 +138,7 @@ let conf = {
 
 let argv = minimist(process.argv.slice(2), {
     default: conf.user,
-    boolean: ['v'],
+    boolean: ['v', 'norerun'],
     string: ['a']
 })
 
@@ -147,7 +148,7 @@ conf.user.e = _.uniq(conf.exclude_def.concat(argv.e))
 if (conf.user.v) vlog = log
 
 if (argv._[0]) {
-    conf.cmd.name = argv._[0]
+    conf.cmd.name = argv._[0].toString()
     conf.cmd.args = argv._.slice(1)
 }
 
