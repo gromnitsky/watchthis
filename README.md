@@ -38,6 +38,11 @@ Be verbose:
 
 	$ watchthis -v echo hello --debounce 400
 
+Separate watchthis options from the options of an external command
+(otherwise they may clash, like with `-e` in the example below):
+
+	./watchthis -e \*.less -- make -e
+
 View the list of watchers in realtime:
 
 (terminal #1)
