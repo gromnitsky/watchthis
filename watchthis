@@ -45,7 +45,7 @@ let tidings = function(cmd, state, ne, force = false) {
 	return
     }
 
-    vlog(`${ne}: RUN ${force ? 'AGAIN ' : ''}${cmd.name}`)
+    vlog(`${ne}: RUN${force ? ' AGAIN' : ''}: ${cmd.name} ${cmd.args.join(' ')}`)
 
     state.solicitor = null
     state.locked = true
