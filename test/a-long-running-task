@@ -1,7 +1,11 @@
 #!/bin/sh
 
 echo A-LONG-RUNNING-TASK: $@
-sleep 10
+for idx in `seq 10 -1 1`; do
+    echo $idx
+    sleep 1
+done
+echo done
 
 code=$1
 [ ! "$1" ] && code=0
