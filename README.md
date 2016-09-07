@@ -9,6 +9,7 @@ file system changes.
 	$ npm install watchthis
 
 * Watches directories recursively.
+* Has post-run hooks.
 * [anymatch](https://github.com/es128/anymatch) style exclude patterns
 * Debounces events.
 * Ignores all new events while a user-provided command is running (if
@@ -18,7 +19,7 @@ file system changes.
 
 ## Requirements
 
-* Nodejs 6.3
+* Nodejs 6.3+
 
 ## Examples
 
@@ -80,6 +81,18 @@ $ curl -s http://127.0.0.1:8888 | json
   ]
 }
 ~~~
+
+## Post-run hooks
+
+* `exit0`, runs when a user-provided command returns 0 exit status.
+* `exit1`, when the exit status != 0.
+
+	$ watchthis echo hello, dude --exit0 'play -V1 -q /usr/share/sounds/freedesktop/stereo/message.oga' --exit1 'play -q /usr/share/sounds/freedesktop/stereo/bell.oga'
+
+Both `--exit0` & `--exit0` require ∃1 arg that is internally parsed
+via [shell-quote](https://github.com/substack/node-shell-quote)
+regardless of your underline OS.
+
 
 ## Bugs
 

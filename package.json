@@ -1,11 +1,12 @@
 {
     "name": "watchthis",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Run a command on file system changes",
     "dependencies": {
 	"chokidar": "~1.6.0",
 	"lodash": "~4.13.1",
-	"minimist": "~1.2.0"
+	"minimist": "~1.2.0",
+	"shell-quote": "~1.6.1"
     },
     "devDependencies": {
 	"mocha": "~2.5.3"

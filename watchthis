@@ -9,6 +9,7 @@ let os = require('os')
 let _ = require('lodash')
 let chokidar = require('chokidar')
 let minimist = require('minimist')
+let shellquote = require('shell-quote')
 
 let meta = require('./package.json')
 
@@ -53,7 +54,8 @@ let tidings = function(conf, state, ne, force = false) {
 
     child.on('exit', (code) => {
 	state.locked = false
-	if (code !== 0) log(`${ne.id}: ${conf.cmd.name} exited w/ ${code}`)
+	log(`${ne.id}: ${conf.cmd.name} exit code: ${code}`)
+	exit_hook(conf, code)
 	if (state.solicitor) tidings(conf, state, state.solicitor, true)
     })
 
@@ -61,6 +63,22 @@ let tidings = function(conf, state, ne, force = false) {
 	state.locked = false
 	log(`${ne.id}: ${conf.cmd.name}: ${err}`)
 	if (state.solicitor) tidings(conf, state, state.solicitor, true)
+    })
+}
+
+let exit_hook = function(conf, type) {
+    let hook = 'exit' + (type ? 1 : 0)
+    let cmd = conf.user[hook]
+    if (!cmd.name) return
+
+    vlog(`HOOK ${hook}: ${cmd.name} ${cmd.args.join(' ')}`)
+
+    let child = spawn(cmd.name, cmd.args, { stdio: [0, 1, 2] })
+    child.on('exit', (code) => {
+	vlog(`HOOK ${hook}: exit code: ${code}`)
+    })
+    child.on('error', (err) => {
+	log(`HOOK ${hook}: ${err}`)
     })
 }
 
@@ -115,6 +133,10 @@ let server = function(conf, state, watcher) {
     if (conf.user.S !== '') srv.listen(conf.user.S)
 }
 
+let cmd_run_params = function(arr) {
+    return { name: arr[0], args: arr.slice(1) }
+}
+
 
 // Main
 
@@ -126,6 +148,8 @@ let conf = {
 	debounce: 1000,
 	S: '',
 	norerun: false,
+	exit0: '',
+	exit1: ''
     },
     cmd: {
 	name: 'fortune',
@@ -139,18 +163,17 @@ let conf = {
 let argv = minimist(process.argv.slice(2), {
     default: conf.user,
     boolean: ['v', 'norerun'],
-    string: ['a']
+    string: ['a', 'exit0', 'exit1']
 })
 
 conf.user = argv
 conf.user.a = [].concat(argv.a)
 conf.user.e = _.uniq(conf.exclude_def.concat(argv.e))
+conf.user.exit0 = cmd_run_params(shellquote.parse(conf.user.exit0))
+conf.user.exit1 = cmd_run_params(shellquote.parse(conf.user.exit1))
 if (conf.user.v) vlog = log
 
-if (argv._[0]) {
-    conf.cmd.name = argv._[0].toString()
-    conf.cmd.args = argv._.slice(1)
-}
+if (argv._[0]) conf.cmd = cmd_run_params(argv._)
 
 try {
     // actually, it should be chokidar's job
