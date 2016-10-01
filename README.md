@@ -114,7 +114,19 @@ alias watchthis.sound='watchthis \
 
 ## Bugs
 
-Tested under Fedora only.
+* Simple exclude patterns like '*.js' will fail if an argument to `-a`
+  option contain `..`. To mitigate this, instead of a naïve
+
+		watchthis -a  ../foo -e \*.js -- make
+
+	run
+
+		watchthis -a $(realpath ../foo) -e "$(realpath ../foo)/*.js" -- make
+
+* `-a` option doesn't accept globs; e.g. this will fail w/ ENOENT
+  error: `watchthis -a 'foo/*.js' -- make`.
+
+* Tested under Fedora only.
 
 ## License
 
