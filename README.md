@@ -112,6 +112,38 @@ alias watchthis.sound='watchthis \
 	$ watchthis.sound echo hello
 
 
+## Hints
+
+### Auto-restarting nodejs server
+
+If you write, for example, an HTTP server in nodejs & want it to
+automatically restart on each change in its source code, use this
+simple makefile:
+
+~~~
+$ cat server.mk
+.PHONY: server
+server: kill
+	./my-server &
+
+.PHONY: kill
+kill:
+	-pkill -f 'node ./my-server'
+~~~
+
+& run watchthis as:
+
+	$ watchthis.sound -- make -f server.mk
+
+Notice that we run `my-server` in the background. It's necessary to do
+so, otherwise watchthis will wait for make to finish & will respond
+with `LOCKED` to each attempt to run make again while the previous
+invocation has not been finished. The node program (`my-server`) will
+still share the stdout & the stderr w/ `watchthis` (& usually will be
+killed too if you press Ctrl-C), so the fact that it's running in the
+bg isn't a problem.
+
+
 ## Bugs
 
 * Simple exclude patterns like '*.js' will fail if an argument to `-a`
@@ -126,7 +158,7 @@ alias watchthis.sound='watchthis \
 * `-a` option doesn't accept globs; e.g. this will fail w/ ENOENT
   error: `watchthis -a 'foo/*.js' -- make`.
 
-* Tested under Fedora only.
+* Battle-tested under Fedora only.
 
 ## License
 
