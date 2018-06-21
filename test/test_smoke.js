@@ -1,3 +1,5 @@
+#!/opt/bin/mocha --ui=tdd
+
 'use strict';
 
 let assert = require('assert')

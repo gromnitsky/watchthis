@@ -8,9 +8,6 @@
       "minimist": "~1.2.0",
       "shell-quote": "~1.6.1"
    },
-   "devDependencies": {
-      "mocha": "~5.2.0"
-   },
    "keywords": [
       "watch",
       "file system",
