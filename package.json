@@ -3,10 +3,10 @@
    "version": "1.0.0",
    "description": "Run a command on file system changes",
    "dependencies": {
-      "chokidar": "~2.0.4",
-      "lodash": "~4.17.10",
-      "minimist": "~1.2.0",
-      "shell-quote": "~1.6.1"
+      "chokidar": "~3.4.2",
+      "lodash": "~4.17.20",
+      "minimist": "~1.2.5",
+      "shellwords": "~0.1.1"
    },
    "keywords": [
       "watch",

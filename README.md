@@ -19,7 +19,7 @@ file system changes.
 
 ## Requirements
 
-* Nodejs 6.3+
+* Nodejs 12+
 
 ## Examples
 
@@ -92,7 +92,7 @@ $ watchthis echo hello, dude --exit0 'play -V1 -q /usr/share/sounds/freedesktop/
 ~~~
 
 Both `--exit0` & `--exit0` require ∃1 arg that is internally parsed
-via [shell-quote](https://github.com/substack/node-shell-quote)
+via [shellwords](https://github.com/jimmycuadra/shellwords) pkg,
 regardless of your underline OS shell.
 
 

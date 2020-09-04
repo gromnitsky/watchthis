@@ -9,7 +9,7 @@ let os = require('os')
 let _ = require('lodash')
 let chokidar = require('chokidar')
 let minimist = require('minimist')
-let shellquote = require('shell-quote')
+let shellwords = require('shellwords')
 
 let meta = require('./package.json')
 
@@ -169,8 +169,8 @@ let argv = minimist(process.argv.slice(2), {
 conf.user = argv
 conf.user.a = [].concat(argv.a)
 conf.user.e = _.uniq(conf.exclude_def.concat(argv.e))
-conf.user.exit0 = cmd_run_params(shellquote.parse(conf.user.exit0))
-conf.user.exit1 = cmd_run_params(shellquote.parse(conf.user.exit1))
+conf.user.exit0 = cmd_run_params(shellwords.split(conf.user.exit0))
+conf.user.exit1 = cmd_run_params(shellwords.split(conf.user.exit1))
 if (conf.user.v) vlog = log
 
 if (argv._[0]) conf.cmd = cmd_run_params(argv._)
